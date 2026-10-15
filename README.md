@@ -25,6 +25,7 @@ shows where they go.
 |---|---|---|---|
 | Perlmutter | `m5429_g` | `gm_hackathon26_session5` (250 nodes) | During the session: 2026-10-15, 13:30–15:00 Pacific |
 | Aurora | `GenesisHackathonOct26` | `R8914313` | All hackathon week |
+| Frontier | | `gm_thu` | During the day of the session |
 
 After the session, Perlmutter also has a 100-node reservation on the same account:
 `gm_hackathon26_day3` (2026-10-16, 07:00–13:30 Pacific).
