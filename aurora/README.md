@@ -31,6 +31,8 @@ Each run also writes `$LOGDIR/<config>-<timestamp>/run.log` (console output of a
 ranks, plus the exact config used) and TensorBoard logs to
 `$LOGDIR/<config>/<N>GPU/<timestamp>/`. `$LOGDIR` defaults to `logs/` in this directory.
 
+Job status can be obtained with ` qstat | grep <username>`
+
 ## Configs
 
 Each Aurora node has 6 GPUs with 2 tiles each; every tile is one data-parallel rank,
