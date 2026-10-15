@@ -1,15 +1,15 @@
-# ViT training on Aurora
+# Vision Transformer (ViT) training on Aurora
 
-Trains a Vision Transformer on ERA5 weather data using the code from the
+Trains a Vision Transformer (ViT) on ERA5 weather data using the code from the
 [SC25 deep learning at scale tutorial](https://github.com/NERSC/sc25-dl-tutorial),
-data parallel across Aurora's Intel GPUs. This is the Aurora counterpart of the
-Perlmutter `dp` example.
+data parallel across Aurora's Intel GPUs. 
+
 
 | File | Purpose |
 |---|---|
-| `setup.sh` | Clones the training code at the pinned commit, applies the two patches below, and builds the venv. Run on a login node. Safe to re-run. |
-| `env.sh` | Paths for the Python environment, code checkout, data, and logs. Export a variable to override it. |
-| `ViT_aurora.yaml` | The training configs, one per node count. |
+| `setup.sh` | Clones the training code at the pinned commit, applies the two patches below, and builds the venv. Run on a login node |
+| `env.sh` | Paths for the Python environment, code checkout, data, and logs. |
+| `ViT_aurora.yaml` | The training configurations |
 | `submit_aurora.sh` | PBS batch script; sets up the environment and runs one or more configs. |
 | `run_aurora.sh` | Launches one config of `train_mp.py` with [`ezpz`](https://github.com/saforem2/ezpz); called by `submit_aurora.sh`. |
 | `sc25-persistent-workers.patch` | One-line DataLoader fix applied by `setup.sh` (see [Training code version](#training-code-version)). |
@@ -23,7 +23,7 @@ For the Genesis hackathon, there is a reservation in place. Use project
 ```bash
 ./setup.sh
 qsub -A GenesisHackathonOct26 -q R8914313 -l select=1 -v CONFIG=smoke submit_aurora.sh   # ~2 min check
-qsub -A GenesisHackathonOct26 -q R8914313 -l select=4 submit_aurora.sh                   # dp, 4 nodes, ~10 min
+qsub -A GenesisHackathonOct26 -q R8914313 -l select=4 submit_aurora.sh                   # dp, 4 node
 ```
 
 Submit from this directory. PBS output goes to `vit-weather.o<jobid>` here.
@@ -38,6 +38,17 @@ so a node runs 12 ranks. All configs use 16 samples per rank and the full
 37,960-sample training set. Each config is sized for one node count: request that
 many nodes with `-l select=N`.
 
+| Config | Nodes | Ranks | Global batch | lr | Epochs (iterations) |
+|---|---|---|---|---|---|
+| `smoke` | 1 | 12 | 192 | 1.73e-3 | 2 × 10 steps on a subset  |
+| `dp_1node` | 1 | 12 | 192 | 1.73e-3 | 4 (788) | 
+| `dp_2node` | 2 | 24 | 384 | 2.45e-3 | 4 (392) | 
+| `dp` | 4 | 48 | 768 | 3.46e-3 | 4 (196) | 
+| `dp_8node` | 8 | 96 | 1536 | 4.90e-3 | 8 (192) | 
+| `dp_16node` | 16 | 192 | 3072 | 6.93e-3 | 8 (96) |
+
+<!--
+
 | Config | Nodes | Ranks | Global batch | lr | Epochs (iterations) | Throughput |
 |---|---|---|---|---|---|---|
 | `smoke` | 1 | 12 | 192 | 1.73e-3 | 2 × 10 steps on a subset | — |
@@ -47,8 +58,10 @@ many nodes with `-l select=N`.
 | `dp_8node` | 8 | 96 | 1536 | 4.90e-3 | 8 (192) | ~860 samples/s |
 | `dp_16node` | 16 | 192 | 3072 | 6.93e-3 | 8 (96) | ~1,200 samples/s |
 
+
 Throughput is the mean of epochs 2 onward, measured on 2026-10-13. Epoch-to-epoch
 variation is large at 8 and 16 nodes (about ±20%).
+-->
 
 Compared with the Perlmutter `dp` config, these use the same model (ViT, embed dim
 384, 12 layers), fp16 mixed precision, fused Adam, `torch.compile`, and 8 loader
@@ -88,10 +101,11 @@ with `--tensor_parallel` / `--context_parallel`, keeping `global_batch_size`
 divisible by `dp`:
 
 ```bash
-qsub -A <project> -l select=1 -q debug -v CONFIG=mp_smoke submit_aurora.sh
-qsub -A <project> -l select=1 -v CONFIG=mp_1node,EXTRA_ARGS="--tensor_parallel=2" submit_aurora.sh
+qsub -A GenesisHackathonOct26 -q R8914313 -l select=1 -v CONFIG=mp_smoke submit_aurora.sh
+qsub -A GenesisHackathonOct26 -q R8914313 -l select=1 -v CONFIG=mp_1node,EXTRA_ARGS="--tensor_parallel=2" submit_aurora.sh
 ```
 
+<!--
 `sc25-xpu-mp.patch` ports `train_mp.py` the way upstream ported `train.py`:
 device helpers instead of `torch.cuda.*`, device memory reporting instead of
 `pynvml`, `ezpz.setup_torch()` under `mpiexec`, the `xccl` backend in
@@ -99,7 +113,9 @@ device helpers instead of `torch.cuda.*`, device memory reporting instead of
 `ReduceOp.AVG`. The Transformer Engine backend (`mp_te*` on Perlmutter) is
 NVIDIA-only.
 
+
 ## Variations
+
 
 ```bash
 # Several configs in one allocation, run in turn
@@ -120,7 +136,7 @@ one running job per user). Use `-q debug` for 1–2 nodes, `-q capacity` for up 
 To run interactively:
 
 ```bash
-qsub -I -A <project> -l select=1 -l walltime=1:00:00 -l filesystems=flare:home -q debug
+qsub -I -A GenesisHackathonOct26 -q R8914313 -l select=1 -l walltime=1:00:00 
 # on the compute node, from this directory:
 source env.sh
 module use /soft/modulefiles; module load $FRAMEWORKS_MODULE
