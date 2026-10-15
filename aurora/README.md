@@ -10,8 +10,8 @@ data parallel across Aurora's Intel GPUs.
 | `setup.sh` | Clones the training code at the pinned commit, applies the two patches below, and builds the venv. Run on a login node |
 | `env.sh` | Paths for the Python environment, code checkout, data, and logs. |
 | `ViT_aurora.yaml` | The training configurations |
-| `submit_aurora.sh` | PBS batch script; sets up the environment and runs one or more configs. |
-| `run_aurora.sh` | Launches one config of `train_mp.py` with [`ezpz`](https://github.com/saforem2/ezpz); called by `submit_aurora.sh`. |
+| `submit.sh` | PBS batch script; sets up the environment and runs one or more configs. |
+| `run_aurora.sh` | Launches one config of `train_mp.py` with [`ezpz`](https://github.com/saforem2/ezpz); called by `submit.sh`. |
 | `sc25-persistent-workers.patch` | One-line DataLoader fix applied by `setup.sh` (see [Training code version](#training-code-version)). |
 | `sc25-xpu-mp.patch` | Makes `train_mp.py` (model parallel) run on Intel XPU; applied by `setup.sh` (see [Model parallel](#model-parallel)). |
 
@@ -22,8 +22,8 @@ For the Genesis hackathon, there is a reservation in place. Use project
 
 ```bash
 ./setup.sh
-qsub -A GenesisHackathonOct26 -q R8914313 -l select=1 -v CONFIG=smoke submit_aurora.sh   # ~2 min check
-qsub -A GenesisHackathonOct26 -q R8914313 -l select=4 submit_aurora.sh                   # dp, 4 node
+qsub -A GenesisHackathonOct26 -q R8914313 -l select=1 -v CONFIG=smoke submit.sh   # ~2 min check
+qsub -A GenesisHackathonOct26 -q R8914313 -l select=4 submit.sh                   # dp, 4 node
 ```
 
 Submit from this directory. PBS output goes to `vit-weather.o<jobid>` here.
@@ -101,8 +101,8 @@ with `--tensor_parallel` / `--context_parallel`, keeping `global_batch_size`
 divisible by `dp`:
 
 ```bash
-qsub -A GenesisHackathonOct26 -q R8914313 -l select=1 -v CONFIG=mp_smoke submit_aurora.sh
-qsub -A GenesisHackathonOct26 -q R8914313 -l select=1 -v CONFIG=mp_1node,EXTRA_ARGS="--tensor_parallel=2" submit_aurora.sh
+qsub -A GenesisHackathonOct26 -q R8914313 -l select=1 -v CONFIG=mp_smoke submit.sh
+qsub -A GenesisHackathonOct26 -q R8914313 -l select=1 -v CONFIG=mp_1node,EXTRA_ARGS="--tensor_parallel=2" submit.sh
 ```
 
 <!--
@@ -119,16 +119,16 @@ NVIDIA-only.
 
 ```bash
 # Several configs in one allocation, run in turn
-qsub -A <project> -l select=1 -v CONFIG="smoke dp_1node" submit_aurora.sh
+qsub -A <project> -l select=1 -v CONFIG="smoke dp_1node" submit.sh
 
 # Extra train.py arguments
-qsub -A <project> -v CONFIG=dp,EXTRA_ARGS="--num_iters=49" submit_aurora.sh
+qsub -A <project> -v CONFIG=dp,EXTRA_ARGS="--num_iters=49" submit.sh
 
 # Write logs somewhere else (e.g. your project space)
-qsub -A <project> -v CONFIG=dp,LOGDIR=/lus/flare/projects/<project>/$USER/vit-logs submit_aurora.sh
+qsub -A <project> -v CONFIG=dp,LOGDIR=/lus/flare/projects/<project>/$USER/vit-logs submit.sh
 ```
 
-`submit_aurora.sh` defaults to the `debug-scaling` queue (1–256 nodes, 1 hour max,
+`submit.sh` defaults to the `debug-scaling` queue (1–256 nodes, 1 hour max,
 one running job per user). Use `-q debug` for 1–2 nodes, `-q capacity` for up to
 16 nodes.
 
