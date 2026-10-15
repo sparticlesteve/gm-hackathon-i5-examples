@@ -50,12 +50,24 @@ set +u
 module use /soft/modulefiles
 module load "$FRAMEWORKS_MODULE"
 set -u
+BASE_PYTHON=$FRAMEWORKS_PREFIX/bin/python3
+if ! "$BASE_PYTHON" -c 'import torch' 2>/dev/null; then
+    echo "error: $BASE_PYTHON can't import torch; set FRAMEWORKS_PREFIX in env.sh" >&2
+    echo "  (the conda env $FRAMEWORKS_MODULE activates: module show $FRAMEWORKS_MODULE)" >&2
+    exit 1
+fi
 if [[ ! -x "$VENV/bin/python3" ]]; then
-    python3 -m venv --system-site-packages "$VENV"
+    "$BASE_PYTHON" -m venv --system-site-packages "$VENV"
+fi
+if ! "$VENV/bin/python3" -c 'import torch' 2>/dev/null; then
+    echo "error: $VENV was built on another python ($(grep '^home' "$VENV/pyvenv.cfg"));" >&2
+    echo "  remove it and re-run: rm -rf $VENV && $0" >&2
+    exit 1
 fi
 "$VENV/bin/python3" -m pip install --quiet "$EZPZ" ruamel.yaml tensorboard
 
 mkdir -p "$LOGDIR"
+
 
 echo "sc25-dl-tutorial at $(git -C "$SC25_DIR" rev-parse --short HEAD) (patched) in $SC25_DIR"
 echo "venv in $VENV"
