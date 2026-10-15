@@ -1,20 +1,20 @@
 # Genesis hackathon I5: ViT training examples
 
-Examples for the Genesis hackathon session **I5. Getting started with pretraining
+Examples for the Genesis hackathon session **I5: Getting started with pretraining
 foundation models on DOE supercomputers**.
 
-They train a Vision Transformer (ViT) on ERA5 weather data on three DOE
+Here we train a Vision Transformer (ViT) on ERA5 weather data on three DOE
 supercomputers, using the code from the
 [SC25 deep learning at scale tutorial](https://github.com/NERSC/sc25-dl-tutorial).
 
 Each system has its own folder with setup, configs, a batch script, and a README.
 Start with the README for the system you're using.
 
-| System | Folder | Configs | Notes |
-|---|---|---|---|
-| Perlmutter (NERSC) | [`perlmutter`](perlmutter) | `dp` (data parallel), `mp` (model parallel) | Slurm + Shifter |
-| Aurora (ALCF) | [`aurora`](aurora) | `smoke`, `dp_*`, `mp_*` | PBS + [ezpz](https://github.com/saforem2/ezpz); `mp_*` not yet benchmarked |
-| Frontier (OLCF) | [`frontier`](frontier) | `dp` | Slurm, 1 node |
+| System | Folder  | Notes |
+|---|---|---|
+| Perlmutter (NERSC) | [`perlmutter`](perlmutter)  | Slurm + Shifter |
+| Aurora (ALCF) | [`aurora`](aurora)  | PBS + [ezpz](https://github.com/saforem2/ezpz);|
+| Frontier (OLCF) | [`frontier`](frontier) | Slurm |
 
 ## Hackathon reservations
 
