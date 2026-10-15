@@ -132,6 +132,7 @@ qsub -A <project> -v CONFIG=dp,LOGDIR=/lus/flare/projects/<project>/$USER/vit-lo
 one running job per user). Use `-q debug` for 1–2 nodes, `-q capacity` for up to
 16 nodes.
 
+-->
 
 To run interactively:
 
