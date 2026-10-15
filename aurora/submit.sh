@@ -41,6 +41,16 @@ module use /soft/modulefiles
 module load "$FRAMEWORKS_MODULE"
 source "$VENV/bin/activate"
 
+# Fail fast (with what the batch shell sees) if the frameworks env didn't load
+if ! torch_err=$(python3 -c 'import torch' 2>&1); then
+    echo "error: python3 can't import torch after loading $FRAMEWORKS_MODULE" >&2
+    echo "$torch_err" | tail -n 15 | sed 's/^/  /' >&2
+    echo "  python3=$(command -v python3) PYTHONPATH=${PYTHONPATH:-<unset>}" >&2
+    echo "  venv base: $(grep -E '^(home|include-system-site-packages)' "$VENV/pyvenv.cfg" | tr '\n' ' ')" >&2
+    echo "  sys.path: $(python3 -c 'import sys; print(sys.path)' 2>&1)" >&2
+    exit 1
+fi
+
 status=0
 for cfg in ${CONFIG}; do
     bash "$EXAMPLE_DIR/run_aurora.sh" "$cfg" ${EXTRA_ARGS:-} || status=$?
