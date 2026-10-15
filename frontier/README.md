@@ -19,8 +19,7 @@ Clone the training code at the pinned commit:
 ## Quick start
 
 ```bash
-./setup.sh
-sbatch -A <account> submit.sh dp --local_batch_size=4
+sbatch --reservation gm_thu submit.sh dp --local_batch_size=4
 ```
 
 The default script will run on a single Frontier node in data-parallel mode, with average throughput 124 samples/sec. The total job time will be around 12 min for 2 epochs.
